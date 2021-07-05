@@ -1,0 +1,214 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title> Blooming </title>
+    <link rel="icon" type="image/x-icon" href='{% static "assets/img/favicon.ico" %}' />
+    <!-- Font Awesome icons (free version)-->
+    <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google fonts-->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic,700italic" rel="stylesheet"
+        type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700" rel="stylesheet" type="text/css" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link href='{% static "diagnosis_intro.css" %}' rel="stylesheet" />
+    <script src="https://kit.fontawesome.com/d94daef18d.js" crossorigin="anonymous"></script>
+</head>
+
+<body id='page-top'>
+    <!--navigation-->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+        <div class="container">
+            <a class="navbar-brand js-scroll-trigger" href="{%url 'home' %}"><i class="fab fa-atlassian"></i></a>
+            <ul class="navbar-nav text-uppercase ml-auto">
+                <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#introduction">Introduction</a></li>
+                <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#diagnosis">진단</a></li>
+                <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#service">Service</a></li>
+                <li class="nav-item"><a class="nav-link js-scroll-trigger" href="#team">Team</a></li>
+            </ul>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
+                aria-label="Toggle navigation">
+                Menu
+                <i class="fas fa-bars ml-1"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav text-uppercase ml-auto">
+                    <!-- 회원가입/로그인 -->
+                    {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link js-scroll-trigger">Hello, {{user.get_username}}!</a></li>
+                    <li class="nav-item"><a class="nav-link nav-add js-scroll-trigger"
+                            href="{%url 'logout' %}">logout</a></li>
+                    {% else %}
+                    <li class="nav-item"><a class="nav-link nav-add js-scroll-trigger" href="{%url 'signup' %}">Sign
+                            up</a></li>
+                    <li class="nav-item"><a class="nav-link nav-add js-scroll-trigger" href="{%url 'login' %}">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Services-->
+    <section class="page-section" id="services">
+        <div class="container">
+            <!-- 지도를 표시할 div 입니다 -->
+            <div id="map" style="width:100%;height:500px;"></div>
+
+            <script type="text/javascript"
+                src="//dapi.kakao.com/v2/maps/sdk.js?appkey=ff8005316037b11d0b5fe92e158fa343&libraries=services">
+            </script>
+            <script>
+                var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+                    mapOption = { 
+                        center: new kakao.maps.LatLng(37.550701, 127.000667), // 지도의 중심좌표
+                        level: 5 // 지도의 확대 레벨 
+                    }; 
+                
+                var map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+                
+                // HTML5의 geolocation으로 사용할 수 있는지 확인합니다 
+                if (navigator.geolocation) {
+                    
+                    // GeoLocation을 이용해서 접속 위치를 얻어옵니다
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        
+                        var lat = position.coords.latitude, // 위도
+                            lon = position.coords.longitude; // 경도
+                        
+                        var locPosition = new kakao.maps.LatLng(lat, lon), // 마커가 표시될 위치를 geolocation으로 얻어온 좌표로 생성합니다
+                            message = '<div style="padding:5px;">사용자의 현재 위치</div>'; // 인포윈도우에 표시될 내용입니다
+                        
+                        // 마커와 인포윈도우를 표시합니다
+                        displayMarker(locPosition, message);
+                
+                
+                      for (i=0; i<{{xx}}.length; i++) {
+                
+                        var geocoder = new kakao.maps.services.Geocoder(), // 좌표계 변환 객체를 생성합니다
+                            wtmX = {{ xx }}[i], // 변환할 WTM X 좌표 입니다
+                            wtmY = {{ yy }}[i]; // 변환할 WTM Y 좌표 입니다
+                
+                        // WTM 좌표를 WGS84 좌표계의 좌표로 변환합니다
+                        geocoder.transCoord(wtmX, wtmY, transCoordCB, {
+                            input_coord: kakao.maps.services.Coords.WTM, // 변환을 위해 입력한 좌표계 입니다
+                            output_coord: kakao.maps.services.Coords.WGS84 // 변환 결과로 받을 좌표계 입니다 
+                        });
+                
+                        // 좌표 변환 결과를 받아서 처리할 콜백함수 입니다.
+                        function transCoordCB(result, status) {
+                
+                            // 정상적으로 검색이 완료됐으면 
+                            if (status === kakao.maps.services.Status.OK) {
+                
+                                    distanceX = Math.pow((lat - result[0].y) * 10000, 2);
+                                    distanceY = Math.pow((lon - result[0].x) * 10000, 2);
+                                    distance = Math.sqrt(distanceX + distanceY);
+                
+                                    if (distance < 100) {
+                                    
+                                        // 마커를 변환된 위치에 표시합니다
+                                        var marker = new kakao.maps.Marker({
+                                            map: map,
+                                            position: new kakao.maps.LatLng(result[0].y, result[0].x), // 마커를 표시할 위치입니다
+                                            clickable: true
+                
+                                    })
+                
+                                    //{%for data in name reversed %}
+                                    var iwContent = '<div style="padding:5px;"><a href="https://map.kakao.com/link/to/근처 공원으로 마커를 이동해보세요!,'+result[0].y+','+result[0].x+'" style="color:blue" target="_blank">길 찾기</a></div>', // 인포윈도우에 표출될 내용으로 HTML 문자열이나 document element가 가능합니다
+                                        iwPosition = new kakao.maps.LatLng(result[0].y, result[0].x), //인포윈도우 표시 위치입니다
+                                        iwRemoveable = true;
+                                    //{%endfor%}
+                
+                                    // 인포윈도우를 생성합니다
+                                    var infowindow = new kakao.maps.InfoWindow({
+                                        position : iwPosition, 
+                                        content : iwContent,
+                                        removable : iwRemoveable
+                                    });
+                                
+                                    // 마커에 클릭이벤트를 등록합니다
+                                    kakao.maps.event.addListener(marker, 'click', function() {
+                                        // 마커 위에 인포윈도우를 표시합니다
+                                        infowindow.open(map, marker);  
+                                    });
+                                }
+                                }
+                            }
+                        }
+                    });
+                    
+                } else { // HTML5의 GeoLocation을 사용할 수 없을때 마커 표시 위치와 인포윈도우 내용을 설정합니다
+                    
+                    var locPosition = new kakao.maps.LatLng(37.550701, 127.000667),    
+                        message = 'geolocation을 사용할수 없어요..'
+                        
+                    displayMarker(locPosition, message);
+                }
+                
+                // 지도에 마커와 인포윈도우를 표시하는 함수입니다
+                function displayMarker(locPosition, message) {
+                
+                    // 마커를 생성합니다
+                    var marker = new kakao.maps.Marker({  
+                        map: map, 
+                        position: locPosition
+                    }); 
+                    
+                    var iwContent = message, // 인포윈도우에 표시할 내용
+                        iwRemoveable = true;
+                
+                    // 인포윈도우를 생성합니다
+                    var infowindow = new kakao.maps.InfoWindow({
+                        content : iwContent,
+                        removable : iwRemoveable
+                    });
+                    
+                    // 인포윈도우를 마커위에 표시합니다 
+                    infowindow.open(map, marker);
+                    
+                    // 지도 중심좌표를 접속위치로 변경합니다
+                    map.setCenter(locPosition);      
+                }    
+                </script>
+
+
+
+    </section>
+    <!-- Footer-->
+    <footer class="footer py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-4 text-lg-left">Copyright © Blooming 2021</div>
+                <div class="col-lg-4 text-lg-right">
+                    <a class="mr-3" href="#!">Privacy Policy</a>
+                    <a href="#!">Terms of Use</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- Portfolio Modals-->
+    <!-- Modal 1-->
+
+    <!-- Bootstrap core JS-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!— Third party plugin JS—>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <!— Contact form JS—>
+            <script src='{% static "assets/mail/jqBootstrapValidation.js" %}'></script>
+            <script src='{% static "assets/mail/contact_me.js" %}'></script>
+            <!— Core theme JS—>
+                <script src='{% static "js/scripts.js" %}'></script>
+</body>
+
+</html>
